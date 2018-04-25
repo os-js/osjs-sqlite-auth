@@ -45,17 +45,39 @@ const comparePassword = (password, hash) => new Promise((resolve, reject) => {
   bcrypt.compare(password, hash, (err,res) => resolve(res === true));
 });
 
+const createDefaultUsers = users => {
+  const promise = user => encryptPassword(user.password)
+    .then(password => Object.assign({}, user, {password}));
+
+  return users.map(promise);
+};
+
 class SqliteAuth extends Auth {
 
+  constructor(core, options = {}) {
+    const databasePath = path.join(core.options.root, 'osjs.sqite');
+
+    super(core, Object.assign({}, {
+      database: databasePath,
+      users: [{
+        username: 'demo',
+        password: 'demo'
+      }]
+    }, options));
+  }
+
   async init() {
-    const databasePath = path.join(this.core.options.root, 'osjs-auth.sqite');
-    const demoPassword = await encryptPassword('demo');
+    const insertUsers = await Promise.all(createDefaultUsers(this.options.users));
+    console.log('Using authentication database', this.options.database);
 
-    console.log('Using authentication database', databasePath);
+    const insert = user => this.db.run('INSERT INTO users (username, password) VALUES(?, ?)', [
+      user.username,
+      user.password
+    ]);
 
-    this.db = new sqlite.Database(databasePath, () => {
+    this.db = new sqlite.Database(this.options.database, () => {
       this.db.run('CREATE TABLE IF NOT EXISTS users (username VARCHAR, password VARCHAR)', () => {
-        this.db.run('INSERT INTO users (username, password) VALUES(?, ?)', ['demo', demoPassword]);
+        insertUsers.forEach(user => insert(user));
       });
     });
   }

@@ -25,7 +25,21 @@ const SqliteAuth = require('@osjs/sqlite-auth');
 const instance = new Core(config, {
   registerDefault: {
     auth: {
-      class: SqliteAuth
+      class: SqliteAuth,
+      args: {
+        // Database path
+        /*
+        database: '/data/osjs.sqlite',
+        */
+
+        // Default users
+        /*
+        users: [{
+          username: 'demo',
+          password: 'demo'
+        }]
+        */
+      }
     }
   }
 });
