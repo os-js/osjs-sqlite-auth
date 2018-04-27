@@ -26,7 +26,7 @@ const instance = new Core(config, {
   registerDefault: {
     auth: {
       class: SqliteAuth,
-      args: {
+      config: {
         // Database path
         /*
         database: '/data/osjs.sqlite',
