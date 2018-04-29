@@ -52,63 +52,51 @@ const createDefaultUsers = users => {
   return users.map(promise);
 };
 
-class SqliteAuth extends Auth {
+const createDefaultDatabase = async (options) => {
+  const insertUsers = await Promise.all(createDefaultUsers(options.users));
+  console.log('Using authentication database', options.database);
 
-  constructor(core, options = {}) {
-    const databasePath = path.join(core.options.root, 'osjs.sqite');
+  const insert = user => db.run('INSERT INTO users (username, password) VALUES(?, ?)', [
+    user.username,
+    user.password
+  ]);
 
-    super(core, Object.assign({}, {
-      database: databasePath,
-      users: [{
-        username: 'demo',
-        password: 'demo'
-      }]
-    }, options));
-  }
-
-  async init() {
-    const insertUsers = await Promise.all(createDefaultUsers(this.options.users));
-    console.log('Using authentication database', this.options.database);
-
-    const insert = user => this.db.run('INSERT INTO users (username, password) VALUES(?, ?)', [
-      user.username,
-      user.password
-    ]);
-
-    this.db = new sqlite.Database(this.options.database, () => {
-      this.db.run('CREATE TABLE IF NOT EXISTS users (username VARCHAR, password VARCHAR)', () => {
-        insertUsers.forEach(user => insert(user));
-      });
+  const db = new sqlite.Database(options.database, () => {
+    db.run('CREATE TABLE IF NOT EXISTS users (username VARCHAR, password VARCHAR)', () => {
+      insertUsers.forEach(user => insert(user));
     });
-  }
+  });
 
-  destroy() {
-    if (this.db) {
-      this.db.close();
+  return db;
+};
+
+module.exports = (core, options) => {
+  let db;
+
+  const defaultPath = path.join(core.options.root, 'osjs.sqite');
+
+  const settings = Object.assign({
+    database: defaultPath,
+    users: [{
+      username: 'demo',
+      password: 'demo'
+    }]
+  }, options);
+
+  return {
+    init: async() => {
+      db = await createDefaultDatabase(settings);
+    },
+
+    destroy: () => db.close(),
+
+    logout: () => Promise.resolve(true),
+
+    login: async (req, res) => {
+      const {username, password} = req.body;
+      const foundUser = await queryGet(db, 'SELECT * FROM users WHERE username = ?', [username]);
+      const validUser = foundUser ? await comparePassword(password, foundUser.password) : false;
+      return validUser ? {username} : false;
     }
-  }
-
-  async login(req, res) {
-    const {username, password} = req.body;
-
-    const invalid = (error = 'Invalid login') => res.status(403).json({error});
-
-    const foundUser = await queryGet(this.db, 'SELECT * FROM users WHERE username = ?', [username]);
-    if (!foundUser) {
-      invalid();
-      return;
-    }
-
-    const validUser = await comparePassword(password, foundUser.password);
-    if (validUser) {
-      req.session.username = username;
-      res.json({
-        user: {username}
-      });
-    } else {
-      invalid();
-    }
-  }
-}
-
-module.exports = SqliteAuth;
+  };
+};

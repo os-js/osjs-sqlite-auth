@@ -20,12 +20,12 @@ This is the Sqlite Auth Provider for OS.js v3
 In your server initialization script:
 
 ```
-const SqliteAuth = require('@osjs/sqlite-auth');
+const sqliteAuth = require('@osjs/sqlite-auth');
 
 const instance = new Core(config, {
   registerDefault: {
     auth: {
-      class: SqliteAuth,
+      adapter: sqliteAuth,
       config: {
         // Database path
         /*
