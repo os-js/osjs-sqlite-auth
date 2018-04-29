@@ -1,6 +1,6 @@
 {
   "name": "@osjs/sqlite-auth",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "OS.js v3 sqlite authentication provider",
   "main": "index.js",
   "scripts": {
