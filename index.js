@@ -56,13 +56,13 @@ const createDefaultDatabase = async (options) => {
   const insertUsers = await Promise.all(createDefaultUsers(options.users));
   console.log('Using authentication database', options.database);
 
-  const insert = user => db.run('INSERT INTO users (username, password) VALUES(?, ?)', [
+  const insert = user => db.run('INSERT INTO users (id, username, password) VALUES(NULL, ?, ?)', [
     user.username,
     user.password
   ]);
 
   const db = new sqlite.Database(options.database, () => {
-    db.run('CREATE TABLE IF NOT EXISTS users (username VARCHAR, password VARCHAR)', () => {
+    db.run('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username VARCHAR NOT NULL, password VARCHAR NOT NULL)', () => {
       insertUsers.forEach(user => insert(user));
     });
   });
@@ -96,7 +96,7 @@ module.exports = (core, options) => {
       const {username, password} = req.body;
       const foundUser = await queryGet(db, 'SELECT * FROM users WHERE username = ?', [username]);
       const validUser = foundUser ? await comparePassword(password, foundUser.password) : false;
-      return validUser ? {username} : false;
+      return validUser ? foundUser : false;
     }
   };
 };
