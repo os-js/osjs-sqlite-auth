@@ -22,24 +22,22 @@ In your server initialization script:
 ```
 const sqliteAuth = require('@osjs/sqlite-auth');
 
-const instance = new Core(config, {
-  registerDefault: {
-    auth: {
-      adapter: sqliteAuth,
-      config: {
-        // Database path
-        /*
-        database: '/data/osjs.sqlite',
-        */
+core.register(AuthServiceProvider, {
+  args: {
+    adapter: sqliteAuth,
+    config: {
+      // Database path
+      /*
+      database: '/data/osjs.sqlite',
+      */
 
-        // Default users
-        /*
-        users: [{
-          username: 'demo',
-          password: 'demo'
-        }]
-        */
-      }
+      // Default users
+      /*
+      users: [{
+        username: 'demo',
+        password: 'demo'
+      }]
+      */
     }
   }
 });
