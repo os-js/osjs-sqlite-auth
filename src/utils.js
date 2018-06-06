@@ -27,8 +27,47 @@
  * @author  Anders Evenrud <andersevenrud@gmail.com>
  * @licence Simplified BSD License
  */
+const bcrypt = require('bcrypt-nodejs');
+const readline = require('readline');
 
-const cli = require('./src/cli.js');
-const adapter = require('./src/adapter.js');
+const _query = (db, method, query, args) =>
+  new Promise((resolve, reject) => {
+    db[method](query, args, (err, res) => err ? reject(err) : resolve(res));
+  });
 
-module.exports = {adapter, cli};
+const queryGet = (db, query, args = []) => _query(db, 'get', query, args);
+const queryAll = (db, query, args = []) => _query(db, 'all', query, args);
+const query = (db, query, args = []) => _query(db, 'run', query, args);
+
+const encryptPassword = password => new Promise((resolve, reject) => {
+  bcrypt.hash(password, null, null, (err, hash) => err ? reject(err) : resolve(hash));
+});
+
+const promptPassword = q => new Promise((resolve, reject) => {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  rl.question(q, answer => {
+    resolve(answer);
+    rl.close();
+  });
+
+  rl._writeToOutput = s => rl.output.write('*');
+});
+
+const createPassword = () => promptPassword('Password: ')
+  .then(pwd => encryptPassword(pwd));
+
+const comparePassword = (password, hash) => new Promise((resolve, reject) => {
+  bcrypt.compare(password, hash, (err,res) => resolve(res === true));
+});
+
+module.exports = {
+  queryGet,
+  queryAll,
+  query,
+  createPassword,
+  comparePassword
+};

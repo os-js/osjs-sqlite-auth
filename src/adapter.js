@@ -28,7 +28,44 @@
  * @licence Simplified BSD License
  */
 
-const cli = require('./src/cli.js');
-const adapter = require('./src/adapter.js');
+const path = require('path');
+const sqlite = require('sqlite3');
+const {Auth} = require('@osjs/server');
+const {queryGet, comparePassword} = require('./utils.js');
 
-module.exports = {adapter, cli};
+const createDefaultDatabase = async (options) => {
+  console.log('Using authentication database', options.database);
+
+  const db = new sqlite.Database(options.database, () => {
+    db.run('CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username VARCHAR NOT NULL, password VARCHAR NOT NULL)');
+  });
+
+  return db;
+};
+
+module.exports = (core, options) => {
+  let db;
+
+  const defaultPath = path.join(core.options.root, 'osjs.sqite');
+
+  const settings = Object.assign({
+    database: defaultPath
+  }, options);
+
+  return {
+    init: async() => {
+      db = await createDefaultDatabase(settings);
+    },
+
+    destroy: () => db.close(),
+
+    logout: () => Promise.resolve(true),
+
+    login: async (req, res) => {
+      const {username, password} = req.body;
+      const foundUser = await queryGet(db, 'SELECT * FROM users WHERE username = ?', [username]);
+      const validUser = foundUser ? await comparePassword(password, foundUser.password) : false;
+      return validUser ? foundUser : false;
+    }
+  };
+};

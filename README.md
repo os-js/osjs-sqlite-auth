@@ -17,28 +17,44 @@ This is the Sqlite Auth Provider for OS.js v3
 
 ## Usage
 
-In your server initialization script:
+### Server
+
+In your server bootstrap script (`src/server/index.js`) modify the provider registration:
 
 ```
 const sqliteAuth = require('@osjs/sqlite-auth');
 
 core.register(AuthServiceProvider, {
   args: {
-    adapter: sqliteAuth,
+    adapter: sqliteAuth.adapter,
     config: {
-      // Database path
-      /*
-      database: '/data/osjs.sqlite',
-      */
-
-      // Default users
-      /*
-      users: [{
-        username: 'demo',
-        password: 'demo'
-      }]
-      */
+      // Custom Database path
+      //database: '/data/osjs.sqlite',
     }
   }
 });
 ```
+
+### CLI
+
+To get CLI commands to manage users, you'll have to modify your CLI bootstrap script (`src/cli/index.js`):
+
+```
+const sqliteAuth = require('@osjs/sqlite-auth');
+
+const sqliteCli = sqliteAuth.cli({
+  // Custom Database path
+  //database: '/data/osjs.sqlite',
+});
+
+module.exports = [sqliteCli];
+```
+
+You can no manage users with ex. `npx osjs-cli <task>`
+
+Available tasks:
+
+* `user:list` - Lists users
+* `user:add --username=STR` - Adds user
+* `user:pwd --username=STR` - Changes user password
+* `user:remove --username=STR` - Removes user
