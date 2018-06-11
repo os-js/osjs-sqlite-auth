@@ -30,7 +30,6 @@
 
 const path = require('path');
 const sqlite = require('sqlite3');
-const {Auth} = require('@osjs/server');
 const {queryGet, comparePassword} = require('./utils.js');
 
 const createDefaultDatabase = async (options) => {
