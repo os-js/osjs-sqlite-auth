@@ -4,7 +4,8 @@
   "description": "OS.js v3 sqlite authentication provider",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "eslint": "eslint *.js"
   },
   "repository": {
     "type": "git",
@@ -22,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/os-js/osjs-sqlite-auth/issues"
   },
-  "homepage": "https://github.com/os-js/osjs-sqlite-auth#readme"
+  "homepage": "https://github.com/os-js/osjs-sqlite-auth#readme",
+  "devDependencies": {
+    "eslint": "^5.1.0"
+  }
 }
