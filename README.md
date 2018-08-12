@@ -15,6 +15,8 @@ This is the Sqlite Auth Provider for OS.js v3
 
 ## Usage
 
+**IT IS HIGHLY RECOMMENDED THAT YOU USE https://github.com/os-js/osjs-database-auth INSTEAD**
+
 ### Server
 
 In your server bootstrap script (`src/server/index.js`) modify the provider registration:
